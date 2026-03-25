@@ -1,2 +1,0 @@
-git add .gitignore
-git commit -m "Added .gitignore to exclude node_modules"

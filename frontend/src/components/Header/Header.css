@@ -1,0 +1,97 @@
+.header {
+    height: 30vw;
+    margin:  30px auto;              /* space for fixed navbar */
+    background: url('/header_img.png') no-repeat center center;
+    background-size: cover;              /* fills header properly */
+    position: relative;
+    border-radius: 15px;
+}
+
+
+
+/* content inside header */
+.header-contents {
+    position: absolute;
+
+    bottom: 10%;
+    left: 6vw;
+    max-width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vw;
+    animation: fadeIn 1.5s ease-in-out;
+}
+
+.header-contents h2 {
+    font-weight: 400;
+    font-size: max(3.5vw, 22px);
+    color: #ffffff;
+}
+
+.header-contents p {
+    font-size: 1.1vw;
+    color: #f1f1f1;
+    line-height: 1.5;
+}
+
+.header-contents button {
+    border: none;
+    color: #333;
+    font-weight: 500;
+    padding: 1vw 2.5vw;
+    background-color: #ffffff;
+    font-size: max(1vw, 14px);
+    border-radius: 50px;
+    cursor: pointer;
+    width: fit-content;
+    transition: all 0.3s ease;
+}
+
+.header-contents button:hover {
+    background-color: #ff4c24;
+    color: white;
+}
+
+/* Tablet */
+@media (max-width: 1050px) {
+    .header {
+        height: 40vw;
+    }
+    .header-contents {
+        max-width: 60%;
+    }
+    .header-contents p {
+        font-size: 1.4vw;
+    }
+}
+
+/* Mobile */
+@media (max-width: 750px) {
+    .header {
+        height: 55vw;
+        margin-top: 80px;
+    }
+    .header-contents {
+        max-width: 80%;
+        bottom: 8%;
+    }
+    .header-contents p {
+        display: none;
+    }
+    .header-contents button {
+        padding: 2vw 4vw;
+        font-size: 14px;
+    }
+}
+
+/* Fade animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
