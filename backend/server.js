@@ -12,6 +12,7 @@ import "dotenv/config";
 const app = express();
 const port = process.env.PORT || 4000;
 
+// ✅ Stripe setup
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // ✅ STRIPE WEBHOOK (MUST BE BEFORE express.json)
@@ -27,7 +28,7 @@ app.post(
       event = stripe.webhooks.constructEvent(
         req.body,
         sig,
-        process.env.
+        process.env.STRIPE_WEBHOOK_SECRET // ✅ FIXED
       );
     } catch (err) {
       console.log("❌ Webhook Error:", err.message);
@@ -38,40 +39,46 @@ app.post(
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
 
-      const orderId = session.metadata.orderId;
+      const orderId = session.metadata?.orderId;
 
-      await orderModel.findByIdAndUpdate(orderId, {
-        payment: true,
-        status: "Food Processing"
-      });
+      if (orderId) {
+        await orderModel.findByIdAndUpdate(orderId, {
+          payment: true,
+          status: "Food Processing",
+        });
 
-      console.log("✅ Payment verified via webhook");
+        console.log("✅ Payment verified via webhook");
+      } else {
+        console.log("⚠️ Order ID missing in metadata");
+      }
     }
 
     res.status(200).json({ received: true });
   }
 );
 
-// ✅ normal middleware AFTER webhook
+// ✅ NORMAL MIDDLEWARE (AFTER webhook)
 app.use(express.json());
 app.use(cors());
 
-// db connection
+// ✅ DB connection
 connectDB();
 
-// routes
+// ✅ ROUTES
 app.use("/api/food", foodRouter);
 app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 
-// static images
+// ✅ STATIC FILES
 app.use("/images", express.static("uploads"));
 
+// ✅ TEST ROUTE
 app.get("/", (req, res) => {
   res.send("API Working");
 });
 
+// ✅ START SERVER
 app.listen(port, () => {
-  console.log(`Server Started on http://localhost:${port}`);
+  console.log(`🚀 Server Started on http://localhost:${port}`);
 });
