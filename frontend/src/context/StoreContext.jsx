@@ -9,6 +9,7 @@ const StoreContextProvider = ({ children }) => {
 
   const [cartItems, setCartItems] = useState({});
   const [token, setToken] = useState("");
+  const [userId, setUserId] = useState(""); // ✅ ADDED
   const [food_list, setFoodList] = useState([]);
 
   // ---------- FETCH FOOD ----------
@@ -25,14 +26,11 @@ const StoreContextProvider = ({ children }) => {
 
   // ---------- ADD TO CART ----------
   const addToCart = async (itemId) => {
-
-    // Update UI instantly
     setCartItems((prev) => ({
       ...prev,
       [itemId]: (prev[itemId] || 0) + 1,
     }));
 
-    // If user logged in → save in backend
     if (token) {
       try {
         await axios.post(
@@ -52,7 +50,6 @@ const StoreContextProvider = ({ children }) => {
 
   // ---------- REMOVE FROM CART ----------
   const removeFromCart = async (itemId) => {
-
     setCartItems((prev) => ({
       ...prev,
       [itemId]: Math.max((prev[itemId] || 1) - 1, 0),
@@ -90,7 +87,7 @@ const StoreContextProvider = ({ children }) => {
     return total;
   };
 
-  // ---------- LOAD CART FROM BACKEND ----------
+  // ---------- LOAD CART ----------
   const loadCartData = async (savedToken) => {
     try {
       const response = await axios.get(`${url}/api/cart/get`, {
@@ -98,7 +95,6 @@ const StoreContextProvider = ({ children }) => {
           Authorization: `Bearer ${savedToken}`,
         },
       });
-
       setCartItems(response.data.cartData || {});
     } catch (error) {
       console.error("Load cart failed:", error);
@@ -108,28 +104,20 @@ const StoreContextProvider = ({ children }) => {
   // ---------- INIT ----------
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    const storedCart = localStorage.getItem("cart");
+    const storedUserId = localStorage.getItem("userId");
 
     const init = async () => {
       await fetchFoodList();
 
-      if (storedToken) {
+      if (storedToken && storedUserId) {
         setToken(storedToken);
+        setUserId(storedUserId); // ✅ FIX
         await loadCartData(storedToken);
-      } else if (storedCart) {
-        setCartItems(JSON.parse(storedCart)); // ✅ load local cart
       }
     };
 
     init();
   }, []);
-
-  // ---------- SAVE CART TO LOCAL STORAGE ----------
-  useEffect(() => {
-    if (!token) {
-      localStorage.setItem("cart", JSON.stringify(cartItems));
-    }
-  }, [cartItems, token]);
 
   // ---------- CONTEXT ----------
   const contextValue = {
@@ -140,6 +128,8 @@ const StoreContextProvider = ({ children }) => {
     getTotalCartAmount,
     token,
     setToken,
+    userId,       // ✅ EXPORT
+    setUserId,    // ✅ EXPORT
     url,
   };
 

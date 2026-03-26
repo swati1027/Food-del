@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import { StoreContext } from "../../context/StoreContext";
 
 const VerifyPayment = () => {
-  const { url, token } = useContext(StoreContext);
+  const { url } = useContext(StoreContext);
   const [status, setStatus] = useState("Verifying payment...");
   const location = useLocation();
 
@@ -13,42 +13,36 @@ const VerifyPayment = () => {
       const query = new URLSearchParams(location.search);
 
       const success = query.get("success");
-      const sessionId =
-        query.get("session_id") || query.get("orderId");
+      const orderId = query.get("orderId");
 
-      if (success !== "true" || !sessionId) {
-        setStatus("❌ Payment was cancelled or failed.");
+      if (!orderId) {
+        setStatus("❌ Invalid request.");
         return;
       }
 
       try {
-        const response = await axios.post(
-          `${url}/api/order/capture`,
-          { sessionId },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        await axios.post(`${url}/api/order/verify`, {
+          success,
+          orderId
+        });
 
-        if (response.data.success) {
-          setStatus("✅ Payment successful! Thank you for your order.");
+        if (success === "true") {
+          setStatus("✅ Payment successful! Order placed.");
         } else {
-          setStatus("❌ Payment capture failed.");
+          setStatus("❌ Payment cancelled.");
         }
       } catch (error) {
-        console.error("Payment verify error:", error.response?.data || error);
+        console.error(error);
         setStatus("❌ Error verifying payment.");
       }
     };
 
     verifyPayment();
-  }, [location.search, token, url]);
+  }, [location.search, url]);
 
   return (
-    <div style={{ padding: "30px", fontSize: "18px", textAlign: "center" }}>
-      {status}
+    <div style={{ padding: "40px", textAlign: "center" }}>
+      <h2>{status}</h2>
     </div>
   );
 };

@@ -43,11 +43,16 @@ const Login = ({ setShowLogin }) => {
 
       // SUCCESS
       if (response.data.success) {
-        localStorage.setItem("token", response.data.token);
-        setToken(response.data.token);
-        toast.success(response.data.message || "Success");
-        setShowLogin(false);
-      } else {
+  localStorage.setItem("token", response.data.token);
+  localStorage.setItem("userId", response.data.userId); // ✅ ADD THIS
+
+  setToken(response.data.token);
+  // you also need setUserId (next step)
+
+  toast.success(response.data.message || "Success");
+  setShowLogin(false);
+}
+ else {
         // Backend sent success:false
         toast.error(response.data.message || "Authentication failed");
       }

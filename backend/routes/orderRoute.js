@@ -1,13 +1,18 @@
-import express from "express"
-import authMiddleware from "../middleware/auth.js"
-import {placeOrder, verifyOrder,userOrders, listOrders, updateStatus} from "../controllers/orderController.js"
+import express from "express";
+import {
+  placeOrder,
+  verifyOrder,
+  userOrders,
+  listOrders,
+  updateStatus
+} from "../controllers/orderController.js";
 
-const orderRouter = express.Router();
+const router = express.Router();
 
-orderRouter.post("/place",authMiddleware,placeOrder);
-orderRouter.post("/verify",verifyOrder)
-orderRouter.post("/userorders",authMiddleware,userOrders);
-orderRouter.get("/list",listOrders);
-orderRouter.post("/status",updateStatus)
+router.post("/place", placeOrder);
+router.post("/verify", verifyOrder);
+router.post("/userorders", userOrders);
+router.get("/list", listOrders);
+router.post("/status", updateStatus);
 
-export default orderRouter;
+export default router;
