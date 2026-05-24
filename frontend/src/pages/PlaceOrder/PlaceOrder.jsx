@@ -10,7 +10,8 @@ const PlaceOrder = () => {
     food_list,
     cartItems,
     url,
-    userId // ✅ make sure this exists in context
+    currency, // ✅
+    userId
   } = useContext(StoreContext);
 
   const [data, setData] = useState({
@@ -30,60 +31,57 @@ const PlaceOrder = () => {
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
- const placeOrder = async (event) => {
-  event.preventDefault();
+  const placeOrder = async (event) => {
+    event.preventDefault();
 
-  // ✅ login check
-  if (!token || !userId) {
-    alert("Please login first");
-    return;
-  }
-
-  // ✅ empty cart check
-  if (getTotalCartAmount() === 0) {
-    alert("Cart is empty");
-    return;
-  }
-
-  try {
-    const orderItems = food_list
-      .filter((item) => cartItems[item._id] > 0)
-      .map((item) => ({
-        _id: item._id,
-        name: item.name,
-        price: item.price,
-        quantity: cartItems[item._id]
-      }));
-
-    const orderData = {
-      userId,
-      address: data,
-      items: orderItems,
-      amount: getTotalCartAmount() + 2,
-    };
-
-    const response = await axios.post(
-      `${url}/api/order/place`,
-      orderData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
-
-    if (response.data.success) {
-      window.location.replace(response.data.session_url);
-    } else {
-      alert(response.data.message);
+    if (!token || !userId) {
+      alert("Please login first");
+      return;
     }
 
-  } catch (error) {
-    console.error("Order Error:", error);
-    alert("Something went wrong!");
-  }
-};
+    if (getTotalCartAmount() === 0) {
+      alert("Cart is empty");
+      return;
+    }
 
+    try {
+      const orderItems = food_list
+        .filter((item) => cartItems[item._id] > 0)
+        .map((item) => ({
+          _id: item._id,
+          name: item.name,
+          price: item.price,
+          quantity: cartItems[item._id]
+        }));
+
+      const orderData = {
+        userId,
+        address: data,
+        items: orderItems,
+        amount: getTotalCartAmount() + 2,
+      };
+
+      const response = await axios.post(
+        `${url}/api/order/place`,
+        orderData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.data.success) {
+        window.location.replace(response.data.session_url);
+      } else {
+        alert(response.data.message);
+      }
+
+    } catch (error) {
+      console.error("Order Error:", error);
+      alert("Something went wrong!");
+    }
+  };
 
   return (
     <form className="place-order" onSubmit={placeOrder}>
@@ -117,23 +115,21 @@ const PlaceOrder = () => {
 
           <div className="cart-total-details">
             <p>Subtotal</p>
-            <p>₹{getTotalCartAmount()}</p>
+            <p>{currency}{getTotalCartAmount()}</p> {/* ✅ */}
           </div>
 
           <hr />
 
           <div className="cart-total-details">
             <p>Delivery Fee</p>
-            <p>₹{getTotalCartAmount() === 0 ? 0 : 2}</p>
+            <p>{currency}{getTotalCartAmount() === 0 ? 0 : 2}</p> {/* ✅ */}
           </div>
 
           <hr />
 
           <div className="cart-total-details">
             <b>Total</b>
-            <b>
-              ₹{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + 2}
-            </b>
+            <b>{currency}{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + 2}</b> {/* ✅ */}
           </div>
 
           <button type="submit">PROCEED TO PAYMENT</button>

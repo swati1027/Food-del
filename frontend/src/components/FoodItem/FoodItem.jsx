@@ -4,7 +4,7 @@ import { assets, url } from "../../assets/assets";
 import "./FoodItem.css";
 
 const FoodItem = ({ id, name, price, description, image }) => {
-  const { cartItems, addToCart, removeFromCart } =
+  const { cartItems, addToCart, removeFromCart, currency } = // ✅ add currency
     useContext(StoreContext);
 
   return (
@@ -43,7 +43,7 @@ const FoodItem = ({ id, name, price, description, image }) => {
       <div className="food-item-info">
         <p className="food-item-name">{name}</p>
         <p className="food-item-desc">{description}</p>
-        <p className="food-item-price">₹{price}</p>
+        <p className="food-item-price">{currency}{price}</p> {/* ✅ was ₹ */}
       </div>
     </div>
   );

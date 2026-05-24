@@ -6,8 +6,10 @@ export const StoreContext = createContext(null);
 const StoreContextProvider = ({ children }) => {
 
   const url = "https://food-del-backend-p3jv.onrender.com";
+  const currency = "$";
 
   const [cartItems, setCartItems] = useState({});
+  
   const [token, setToken] = useState("");
   const [userId, setUserId] = useState(""); // ✅ ADDED
   const [food_list, setFoodList] = useState([]);
@@ -131,6 +133,7 @@ const StoreContextProvider = ({ children }) => {
     userId,       // ✅ EXPORT
     setUserId,    // ✅ EXPORT
     url,
+    currency,
   };
 
   return (
