@@ -6,27 +6,18 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // PLACE ORDER
 const placeOrder = async (req, res) => {
-  const frontend_url = "http://localhost:5173";
+  const frontend_url = process.env.FRONTEND_URL || "http://localhost:5174";
 
   try {
-    console.log("📦 Place order request:", req.body);
+    const userId = req.body.userId;
 
-    // ✅ Validate required fields
-    if (!req.body.userId || !req.body.items || !req.body.amount || !req.body.address) {
+    if (!userId || !req.body.items || !req.body.amount || !req.body.address) {
       return res.json({
         success: false,
         message: "Missing required fields: userId, items, amount, address"
       });
     }
 
-    if (!Array.isArray(req.body.items) || req.body.items.length === 0) {
-      return res.json({
-        success: false,
-        message: "Items must be a non-empty array"
-      });
-    }
-
-    // ✅ Create order
     const newOrder = new orderModel({
       userId: req.body.userId,
       items: req.body.items,
@@ -37,46 +28,32 @@ const placeOrder = async (req, res) => {
     });
 
     await newOrder.save();
-    console.log("✅ Order saved:", newOrder._id);
 
-    // ✅ Clear cart
-    await userModel.findByIdAndUpdate(req.body.userId, {
-      cartData: {}
-    });
-    console.log("✅ Cart cleared for user:", req.body.userId);
+    await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
 
-    // ✅ Create Stripe line items
     const line_items = req.body.items.map((item) => {
       if (!item.name || !item.price || !item.quantity) {
         throw new Error("Each item must have name, price, and quantity");
       }
       return {
         price_data: {
-          currency: "inr",
-          product_data: {
-            name: item.name
-          },
-          unit_amount: Math.round(item.price * 100) // ✅ Ensure integer
+          currency: "usd",  // ✅ changed from "inr"
+          product_data: { name: item.name },
+          unit_amount: Math.round(item.price * 100)
         },
         quantity: item.quantity
       };
     });
 
-    // ✅ Add delivery charges
     line_items.push({
       price_data: {
-        currency: "inr",
-        product_data: {
-          name: "Delivery Charges"
-        },
+        currency: "usd",  // ✅ changed from "inr"
+        product_data: { name: "Delivery Charges" },
         unit_amount: 2 * 100
       },
       quantity: 1
     });
 
-    console.log("📋 Line items:", line_items);
-
-    // ✅ Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       line_items,
       mode: "payment",
@@ -84,36 +61,21 @@ const placeOrder = async (req, res) => {
       cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder._id}`
     });
 
-    console.log("✅ Stripe session created:", session.id);
-
-    res.json({
-      success: true,
-      session_url: session.url
-    });
+    res.json({ success: true, session_url: session.url });
 
   } catch (error) {
     console.error("❌ PLACE ORDER ERROR:", error.message);
-    console.error("Full error:", error);
-
-    res.json({
-      success: false,
-      message: error.message || "Error placing order"
-    });
+    res.json({ success: false, message: error.message || "Error placing order" });
   }
 };
 
-// VERIFY ORDER (after Stripe redirect)
+// VERIFY ORDER
 const verifyOrder = async (req, res) => {
   const { orderId, success } = req.body;
 
   try {
-    console.log("🔍 Verify order:", { orderId, success });
-
     if (!orderId) {
-      return res.json({
-        success: false,
-        message: "Order ID is required"
-      });
+      return res.json({ success: false, message: "Order ID is required" });
     }
 
     if (success === "true") {
@@ -121,12 +83,9 @@ const verifyOrder = async (req, res) => {
         payment: true,
         status: "Food Processing"
       });
-
-      console.log("✅ Order payment verified:", orderId);
       res.json({ success: true, message: "Payment successful" });
     } else {
       await orderModel.findByIdAndDelete(orderId);
-      console.log("❌ Payment failed, order deleted:", orderId);
       res.json({ success: false, message: "Payment failed" });
     }
   } catch (error) {
@@ -139,17 +98,10 @@ const verifyOrder = async (req, res) => {
 const userOrders = async (req, res) => {
   try {
     if (!req.body.userId) {
-      return res.json({
-        success: false,
-        message: "User ID is required"
-      });
+      return res.json({ success: false, message: "User ID is required" });
     }
 
-    const orders = await orderModel.find({
-      userId: req.body.userId
-    });
-
-    console.log(`📦 Found ${orders.length} orders for user:`, req.body.userId);
+    const orders = await orderModel.find({ userId: req.body.userId });
     res.json({ success: true, data: orders });
   } catch (error) {
     console.error("❌ USER ORDERS ERROR:", error.message);
@@ -161,7 +113,6 @@ const userOrders = async (req, res) => {
 const listOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({});
-    console.log(`📦 Total orders in system: ${orders.length}`);
     res.json({ success: true, data: orders });
   } catch (error) {
     console.error("❌ LIST ORDERS ERROR:", error.message);
@@ -173,17 +124,10 @@ const listOrders = async (req, res) => {
 const updateStatus = async (req, res) => {
   try {
     if (!req.body.orderId || !req.body.status) {
-      return res.json({
-        success: false,
-        message: "Order ID and status are required"
-      });
+      return res.json({ success: false, message: "Order ID and status are required" });
     }
 
-    await orderModel.findByIdAndUpdate(req.body.orderId, {
-      status: req.body.status
-    });
-
-    console.log(`✅ Order status updated:`, req.body.orderId, "→", req.body.status);
+    await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
     res.json({ success: true, message: "Status updated" });
   } catch (error) {
     console.error("❌ UPDATE STATUS ERROR:", error.message);
@@ -191,10 +135,4 @@ const updateStatus = async (req, res) => {
   }
 };
 
-export {
-  placeOrder,
-  verifyOrder,
-  userOrders,
-  listOrders,
-  updateStatus
-};
+export { placeOrder, verifyOrder, userOrders, listOrders, updateStatus };
