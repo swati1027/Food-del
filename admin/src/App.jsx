@@ -1,26 +1,26 @@
 import React from 'react'
 import Navbar from './components/Navbar/Navbar.jsx'
-import Sidebar from'./components/Sidebar/Sidebar.jsx'
+import Sidebar from './components/Sidebar/Sidebar.jsx'
 import { Route, Routes } from 'react-router-dom'
 import Add from './pages/Add/Add'
 import List from './pages/List/List'
 import Orders from './pages/Orders/Orders'
-import { ToastContainer} from 'react-toastify';
+import { ToastContainer } from 'react-toastify'
 
 const App = () => {
-  const url="http://localhost:4000"
+  const url = "https://food-del-backend-p3jv.onrender.com"  // ✅ fixed
+
   return (
     <div>
-      <ToastContainer/>
-
-      <Navbar/>
-      <hr/>
+      <ToastContainer />
+      <Navbar />
+      <hr />
       <div className="app-content">
-        <Sidebar/>
+        <Sidebar />
         <Routes>
-          <Route path="/add" element={<Add url={url} />}/>
-          <Route path="/list" element={<List url={url} />}/>
-          <Route path="/orders" element={<Orders url={url}/>}/>
+          <Route path="/add" element={<Add url={url} />} />
+          <Route path="/list" element={<List url={url} />} />
+          <Route path="/orders" element={<Orders url={url} />} />
         </Routes>
       </div>
     </div>

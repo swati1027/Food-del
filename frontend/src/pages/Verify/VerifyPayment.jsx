@@ -1,17 +1,17 @@
 import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { StoreContext } from "../../context/StoreContext";
 
 const VerifyPayment = () => {
-  const { url } = useContext(StoreContext);
+  const { url, setCartItems } = useContext(StoreContext);
   const [status, setStatus] = useState("Verifying payment...");
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const verifyPayment = async () => {
       const query = new URLSearchParams(location.search);
-
       const success = query.get("success");
       const orderId = query.get("orderId");
 
@@ -27,9 +27,12 @@ const VerifyPayment = () => {
         });
 
         if (success === "true") {
-          setStatus("✅ Payment successful! Order placed.");
+          setStatus("✅ Payment successful! Redirecting...");
+          setCartItems({});                              // ✅ clear cart
+          setTimeout(() => navigate("/myorders"), 2000); // ✅ go to my orders
         } else {
-          setStatus("❌ Payment cancelled.");
+          setStatus("❌ Payment cancelled. Redirecting...");
+          setTimeout(() => navigate("/"), 2000);         // ✅ go home on cancel
         }
       } catch (error) {
         console.error(error);

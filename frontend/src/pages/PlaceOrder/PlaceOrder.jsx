@@ -10,8 +10,8 @@ const PlaceOrder = () => {
     food_list,
     cartItems,
     url,
-    currency, // ✅
-    userId
+    currency,
+    userId,        // ✅ added back
   } = useContext(StoreContext);
 
   const [data, setData] = useState({
@@ -34,7 +34,7 @@ const PlaceOrder = () => {
   const placeOrder = async (event) => {
     event.preventDefault();
 
-    if (!token || !userId) {
+    if (!token) {
       alert("Please login first");
       return;
     }
@@ -51,11 +51,11 @@ const PlaceOrder = () => {
           _id: item._id,
           name: item.name,
           price: item.price,
-          quantity: cartItems[item._id]
+          quantity: cartItems[item._id],
         }));
 
       const orderData = {
-        userId,
+        userId,        // ✅ added back (backend requires it)
         address: data,
         items: orderItems,
         amount: getTotalCartAmount() + 2,
@@ -65,9 +65,7 @@ const PlaceOrder = () => {
         `${url}/api/order/place`,
         orderData,
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { token }  // ✅ plain token header
         }
       );
 
@@ -115,21 +113,21 @@ const PlaceOrder = () => {
 
           <div className="cart-total-details">
             <p>Subtotal</p>
-            <p>{currency}{getTotalCartAmount()}</p> {/* ✅ */}
+            <p>{currency}{getTotalCartAmount()}</p>
           </div>
 
           <hr />
 
           <div className="cart-total-details">
             <p>Delivery Fee</p>
-            <p>{currency}{getTotalCartAmount() === 0 ? 0 : 2}</p> {/* ✅ */}
+            <p>{currency}{getTotalCartAmount() === 0 ? 0 : 2}</p>
           </div>
 
           <hr />
 
           <div className="cart-total-details">
             <b>Total</b>
-            <b>{currency}{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + 2}</b> {/* ✅ */}
+            <b>{currency}{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + 2}</b>
           </div>
 
           <button type="submit">PROCEED TO PAYMENT</button>

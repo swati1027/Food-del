@@ -6,7 +6,7 @@ import axios from "axios"
 
 const LoginPopup = ({ setShowLogin }) => {
 
-  const { url, setToken, setUserId } = useContext(StoreContext) // ✅ add setUserId
+  const { url, setToken, setUserId } = useContext(StoreContext)
 
   const [currState, setCurrState] = useState("Login")
   const [data, setData] = useState({
@@ -30,16 +30,28 @@ const LoginPopup = ({ setShowLogin }) => {
       newUrl += "/api/user/register"
     }
 
-    const response = await axios.post(newUrl, data);
+    try {
+      const response = await axios.post(newUrl, data);
 
-    if (response.data.success) {
-      setToken(response.data.token);
-      setUserId(response.data.userId);                       // ✅
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("userId", response.data.userId); // ✅
-      setShowLogin(false)
-    } else {
-      alert(response.data.message)
+      if (response.data.success) {
+        const receivedToken = response.data.token;
+        const receivedUserId = String(response.data.userId); // ✅ safely convert to string
+
+        if (receivedToken && receivedUserId && receivedUserId !== "undefined") {
+          setToken(receivedToken);
+          setUserId(receivedUserId);
+          localStorage.setItem("token", receivedToken);
+          localStorage.setItem("userId", receivedUserId);   // ✅ only save if valid
+          setShowLogin(false);
+        } else {
+          alert("Login failed: missing user data. Please try again.");
+        }
+      } else {
+        alert(response.data.message)
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Something went wrong. Please try again.");
     }
   }
 
@@ -51,7 +63,10 @@ const LoginPopup = ({ setShowLogin }) => {
           <img onClick={() => setShowLogin(false)} src={assets.cross_icon} alt='' />
         </div>
         <div className='login-popup-inputs'>
-          {currState === "Login" ? <></> : <input name='name' onChange={onChangeHandler} value={data.name} type='text' placeholder='Your name' required />}
+          {currState === "Login"
+            ? <></>
+            : <input name='name' onChange={onChangeHandler} value={data.name} type='text' placeholder='Your name' required />
+          }
           <input name='email' onChange={onChangeHandler} value={data.email} type='email' placeholder='Your email' required />
           <input name='password' onChange={onChangeHandler} value={data.password} type='password' placeholder='Password' required />
         </div>

@@ -7,26 +7,23 @@ import { assets } from '../../assets/assets'
 const MyOrders = () => {
 
   const [data, setData] = useState([])
+  const [loading, setLoading] = useState(true)  // ✅ loading state
   const { token, url } = useContext(StoreContext)
 
   // ---------- FETCH ORDERS ----------
   const fetchOrders = async () => {
     try {
+      setLoading(true)
       const response = await axios.post(
         url + "/api/order/userorders",
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}` // ✅ FIXED
-          }
-        }
+        { headers: { token } }
       )
-
-      console.log("Orders:", response.data) // debug
-
       setData(response.data.data || [])
     } catch (error) {
       console.error("Order fetch failed:", error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -43,8 +40,9 @@ const MyOrders = () => {
 
       <div className='container'>
 
-        {/* ✅ If no orders */}
-        {data.length === 0 ? (
+        {loading ? (
+          <p>Loading orders...</p>                     // ✅ loading indicator
+        ) : data.length === 0 ? (
           <p>No orders found</p>
         ) : (
           data.map((order, index) => (
@@ -55,12 +53,12 @@ const MyOrders = () => {
               <p>
                 {order.items.map((item, i) =>
                   i === order.items.length - 1
-                    ? `₹{item.name} x ₹{item.quantity}`
-                    : `₹{item.name} x ₹{item.quantity}, `
+                    ? `${item.name} x ${item.quantity}`
+                    : `${item.name} x ${item.quantity}, `
                 )}
               </p>
 
-              <p>₹{order.amount}.00</p>
+              <p>${order.amount}.00</p>
 
               <p>Items: {order.items.length}</p>
 
@@ -69,9 +67,7 @@ const MyOrders = () => {
                 <b> {order.status}</b>
               </p>
 
-              <button onClick={fetchOrders}>
-                Track Order
-              </button>
+              <button onClick={fetchOrders}>Track Order</button>
 
             </div>
           ))
