@@ -1,4 +1,4 @@
-export const url="https://food-del-backend-p3jv.onrender.com/";
+export const url="https://food-del-backend-p3jv.onrender.com";
 
 
 import basket_icon from './basket_icon.png'
