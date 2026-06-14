@@ -25,7 +25,7 @@ const Orders = () => {
   const updateStatus = async (event, orderId) => {
     const newStatus = event.target.value;
     try {
-      const response = await axios.put(`${url}/api/order/status`, {
+      const response = await axios.post(`${url}/api/order/status`, {
         orderId,
         status: newStatus,
       });
