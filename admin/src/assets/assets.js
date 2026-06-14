@@ -14,4 +14,4 @@ export const assets = {
     parcel_icon
 }
 
-export const url = 'http://localhost:4000' // ← changed from Render URL
+export const url = 'https://food-del-backend-p3jv.onrender.com' // ← changed from Render URL
