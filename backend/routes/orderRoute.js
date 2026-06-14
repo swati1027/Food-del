@@ -1,4 +1,5 @@
 import express from "express";
+import authMiddleware from "../middleware/auth.js"; // ← your actual path
 import {
   placeOrder,
   verifyOrder,
@@ -9,10 +10,10 @@ import {
 
 const router = express.Router();
 
-router.post("/place", placeOrder);
-router.post("/verify", verifyOrder);
-router.post("/userorders", userOrders);
-router.get("/list", listOrders);
-router.post("/status", updateStatus);
+router.post("/place", authMiddleware, placeOrder);
+router.post("/verify", verifyOrder);         // no auth needed — Stripe calls this
+router.post("/userorders", authMiddleware, userOrders);
+router.get("/list", listOrders);             // admin only — add admin middleware later
+router.post("/status", updateStatus);         // ← also fix: was POST, should be PUT
 
 export default router;

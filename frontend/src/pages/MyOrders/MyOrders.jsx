@@ -1,81 +1,65 @@
-import React, { useContext, useEffect, useState } from 'react'
-import './MyOrders.css'
-import { StoreContext } from '../../context/StoreContext'
-import axios from 'axios'
-import { assets } from '../../assets/assets'
+import "./MyOrders.css";
+import { assets, url } from "../../assets/assets";
+import { useContext, useEffect, useState, useCallback } from "react";
+import { StoreContext } from "../../context/StoreContext";
+import axios from "axios";
 
 const MyOrders = () => {
+  const { token } = useContext(StoreContext);
+  const [data, setData] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const [data, setData] = useState([])
-  const [loading, setLoading] = useState(true)  // ✅ loading state
-  const { token, url } = useContext(StoreContext)
-
-  // ---------- FETCH ORDERS ----------
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
     try {
-      setLoading(true)
       const response = await axios.post(
-        url + "/api/order/userorders",
+        `${url}/api/order/userorders`,
         {},
-        { headers: { token } }
-      )
-      setData(response.data.data || [])
-    } catch (error) {
-      console.error("Order fetch failed:", error)
+        { headers: { token } } // ✅ userId comes from token via middleware
+      );
+      if (response.data.success) {
+        setData(response.data.data ?? []);
+        setError(null);
+      } else {
+        setError(response.data.message || "Failed to fetch orders.");
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  }, [token]);
 
-  // ---------- LOAD ON TOKEN ----------
   useEffect(() => {
-    if (token) {
-      fetchOrders()
-    }
-  }, [token])
+    fetchOrders();
+  }, [fetchOrders]);
 
   return (
-    <div className='my-orders'>
+    <div className="my-orders">
       <h2>My Orders</h2>
-
-      <div className='container'>
-
+      {error && <p className="my-orders-error">{error}</p>}
+      <div className="container">
         {loading ? (
-          <p>Loading orders...</p>                     // ✅ loading indicator
-        ) : data.length === 0 ? (
-          <p>No orders found</p>
+          <p>Loading orders...</p>
+        ) : data.length === 0 && !error ? (
+          <p>No orders found.</p>
         ) : (
-          data.map((order, index) => (
-            <div key={index} className="my-orders-order">
-
-              <img src={assets.parcel_icon} alt="" />
-
-              <p>
-                {order.items.map((item, i) =>
-                  i === order.items.length - 1
-                    ? `${item.name} x ${item.quantity}`
-                    : `${item.name} x ${item.quantity}, `
-                )}
-              </p>
-
-              <p>${order.amount}.00</p>
-
+          data.map((order) => (
+            <div key={order._id} className="my-orders-order">
+              <img src={assets.parcel_icon} alt="Parcel icon" />
+              <p>{order.items.map((item) => `${item.name} x ${item.quantity}`).join(", ")}</p>
+              <p>${Number(order.amount).toFixed(2)}</p>
               <p>Items: {order.items.length}</p>
-
-              <p>
-                <span>&#x25cf;</span>
-                <b> {order.status}</b>
-              </p>
-
-              <button onClick={fetchOrders}>Track Order</button>
-
+              <p><span>&#x25cf; </span><b>{order.status}</b></p>
+              <button onClick={fetchOrders} disabled={loading}>Track Order</button>
             </div>
           ))
         )}
-
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MyOrders
+export default MyOrders;

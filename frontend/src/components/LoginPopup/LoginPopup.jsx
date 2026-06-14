@@ -1,78 +1,61 @@
-import React, { useContext, useState } from 'react'
-import './LoginPopup.css'
-import { assets } from '../../assets/assets'
-import { StoreContext } from '../../context/StoreContext'
-import axios from "axios"
+import { useContext, useState } from "react";
+import "./LoginPopup.css";
+import { assets } from "../../assets/assets";
+import { StoreContext } from "../../context/StoreContext";
+import axios from "axios";
 
 const LoginPopup = ({ setShowLogin }) => {
+  const { url, setToken } = useContext(StoreContext); // ✅ no setUserId needed
 
-  const { url, setToken, setUserId } = useContext(StoreContext)
-
-  const [currState, setCurrState] = useState("Login")
-  const [data, setData] = useState({
-    name: "",
-    email: "",
-    password: ""
-  })
+  const [currState, setCurrState] = useState("Login");
+  const [data, setData] = useState({ name: "", email: "", password: "" });
 
   const onChangeHandler = (event) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setData(data => ({ ...data, [name]: value }))
-  }
+    const { name, value } = event.target;
+    setData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const onLogin = async (event) => {
-    event.preventDefault()
-    let newUrl = url;
-    if (currState === "Login") {
-      newUrl += "/api/user/login"
-    } else {
-      newUrl += "/api/user/register"
-    }
+    event.preventDefault();
+    const endpoint = currState === "Login" ? "/api/user/login" : "/api/user/register";
 
     try {
-      const response = await axios.post(newUrl, data);
-
+      const response = await axios.post(`${url}${endpoint}`, data);
       if (response.data.success) {
         const receivedToken = response.data.token;
-        const receivedUserId = String(response.data.userId); // ✅ safely convert to string
-
-        if (receivedToken && receivedUserId && receivedUserId !== "undefined") {
+        if (receivedToken) {
           setToken(receivedToken);
-          setUserId(receivedUserId);
-          localStorage.setItem("token", receivedToken);
-          localStorage.setItem("userId", receivedUserId);   // ✅ only save if valid
+          localStorage.setItem("token", receivedToken); // ✅ only token, no userId
           setShowLogin(false);
         } else {
-          alert("Login failed: missing user data. Please try again.");
+          alert("Login failed: missing token. Please try again.");
         }
       } else {
-        alert(response.data.message)
+        alert(response.data.message);
       }
     } catch (error) {
       console.error("Login error:", error);
       alert("Something went wrong. Please try again.");
     }
-  }
+  };
 
   return (
-    <div className='login-popup'>
-      <form onSubmit={onLogin} className='login-popup-container'>
-        <div className='login-popup-title'>
+    <div className="login-popup">
+      <form onSubmit={onLogin} className="login-popup-container">
+        <div className="login-popup-title">
           <h2>{currState}</h2>
-          <img onClick={() => setShowLogin(false)} src={assets.cross_icon} alt='' />
+          <img onClick={() => setShowLogin(false)} src={assets.cross_icon} alt="" />
         </div>
-        <div className='login-popup-inputs'>
-          {currState === "Login"
-            ? <></>
-            : <input name='name' onChange={onChangeHandler} value={data.name} type='text' placeholder='Your name' required />
-          }
-          <input name='email' onChange={onChangeHandler} value={data.email} type='email' placeholder='Your email' required />
-          <input name='password' onChange={onChangeHandler} value={data.password} type='password' placeholder='Password' required />
+        <div className="login-popup-inputs">
+          {currState !== "Login" && (
+            <input name="name" onChange={onChangeHandler} value={data.name} type="text" placeholder="Your name" required />
+          )}
+          <input name="email" onChange={onChangeHandler} value={data.email} type="email" placeholder="Your email" required />
+          <input name="password" onChange={onChangeHandler} value={data.password} type="password" placeholder="Password" required />
         </div>
-        <button type='submit'>{currState === "Sign Up" ? "Create account" : "Login"}</button>
-        <div className='login-popup-condition'>
-          <input type='checkbox' required />
+        <button type="submit">{currState === "Sign Up" ? "Create account" : "Login"}</button>
+        <div className="login-popup-condition">
+          <input type="checkbox" required />
           <p>By continuing, I agree to the terms of use & privacy policy.</p>
         </div>
         {currState === "Login"
@@ -81,7 +64,7 @@ const LoginPopup = ({ setShowLogin }) => {
         }
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default LoginPopup
+export default LoginPopup;

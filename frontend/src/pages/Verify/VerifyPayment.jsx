@@ -1,53 +1,38 @@
-import React, { useEffect, useState, useContext } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useContext, useEffect } from "react"; // ← add useContext
+import { StoreContext } from "../../context/StoreContext"; // ← import context
 import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
-import { StoreContext } from "../../context/StoreContext";
+import "./Verify.css";
 
-const VerifyPayment = () => {
-  const { url, setCartItems } = useContext(StoreContext);
-  const [status, setStatus] = useState("Verifying payment...");
-  const location = useLocation();
+const Verify = () => {
+  const [searchParams] = useSearchParams();
+  const success = searchParams.get("success");
+  const orderId = searchParams.get("orderId");
   const navigate = useNavigate();
+  const { url } = useContext(StoreContext); // ← get url from context
 
   useEffect(() => {
     const verifyPayment = async () => {
-      const query = new URLSearchParams(location.search);
-      const success = query.get("success");
-      const orderId = query.get("orderId");
-
-      if (!orderId) {
-        setStatus("❌ Invalid request.");
-        return;
-      }
-
       try {
-        await axios.post(`${url}/api/order/verify`, {
+        const response = await axios.post(`${url}/api/order/verify`, {
           success,
-          orderId
+          orderId,
         });
-
-        if (success === "true") {
-          setStatus("✅ Payment successful! Redirecting...");
-          setCartItems({});                              // ✅ clear cart
-          setTimeout(() => navigate("/myorders"), 2000); // ✅ go to my orders
-        } else {
-          setStatus("❌ Payment cancelled. Redirecting...");
-          setTimeout(() => navigate("/"), 2000);         // ✅ go home on cancel
-        }
+        navigate(response.data.success ? "/myorders" : "/");
       } catch (error) {
-        console.error(error);
-        setStatus("❌ Error verifying payment.");
+        console.error("Payment verification failed:", error);
+        navigate("/");
       }
     };
 
     verifyPayment();
-  }, [location.search, url]);
+  }, [success, orderId, navigate]);
 
   return (
-    <div style={{ padding: "40px", textAlign: "center" }}>
-      <h2>{status}</h2>
+    <div className="verify">
+      <div className="spinner"></div>
     </div>
   );
 };
 
-export default VerifyPayment;
+export default Verify;

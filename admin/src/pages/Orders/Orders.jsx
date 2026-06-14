@@ -1,95 +1,93 @@
-import React, { useState, useEffect } from 'react'
-import './Orders.css'
-import axios from 'axios'
-import { toast } from 'react-toastify'
-import { assets } from '../../assets/assets'
+import { assets, url } from "../../assets/assets";
+import "./Orders.css";
+import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 
-const Orders = ({ url }) => {
+const STATUS_OPTIONS = ["Food Processing", "Out for Delivery", "Delivered"];
 
-  const [orders, setOrders] = useState([])
+const Orders = () => {
+  const [data, setData] = useState([]);
 
-  const fetchAllOrders = async () => {
+  const fetchAllOrders = useCallback(async () => {
     try {
-      const response = await axios.get(`${url}/api/order/list`)
+      const response = await axios.get(`${url}/api/order/list`);
       if (response.data.success) {
-        setOrders(response.data.data.reverse())
+        setData(response.data.data);
       } else {
-        toast.error("Failed to fetch orders")
+        toast.error(response.data.message);
       }
     } catch (error) {
-      console.error("Fetch orders error:", error)
-      toast.error("Something went wrong")
+      toast.error("Failed to fetch orders");
     }
-  }
+  }, []);
 
-  const statusHandler = async (event, orderId) => {
+  const updateStatus = async (event, orderId) => {
+    const newStatus = event.target.value;
     try {
-      const response = await axios.post(`${url}/api/order/status`, {
+      const response = await axios.put(`${url}/api/order/status`, {
         orderId,
-        status: event.target.value
-      })
+        status: newStatus,
+      });
       if (response.data.success) {
-        await fetchAllOrders()
-        toast.success("Status updated")
+        await fetchAllOrders();
+        toast.success(response.data.message);
+      } else {
+        toast.error(response.data.message);
       }
     } catch (error) {
-      console.error("Status update error:", error)
-      toast.error("Failed to update status")
+      toast.error("Failed to update status");
     }
-  }
+  };
 
   useEffect(() => {
-    fetchAllOrders()
-  }, [])
+    fetchAllOrders();
+  }, [fetchAllOrders]);
 
   return (
-    <div className='order add'>
+    <div className="order add">
       <h3>Order Page</h3>
-      <div className='order-list'>
-        {orders.length === 0 ? (
-          <p>No orders found</p>
-        ) : (
-          orders.map((order, index) => (
-            <div key={index} className='order-item'>
-
-              <img src={assets.parcel_icon} alt="" />
-
-              <div>
-                <p className='order-item-food'>
-                  {order.items.map((item, i) =>
-                    i === order.items.length - 1
-                      ? `${item.name} x ${item.quantity}`
-                      : `${item.name} x ${item.quantity}, `
-                  )}
+      <div className="order-list">
+        {data.map((order) => (
+          <div key={order._id} className="order-item">
+            <img src={assets.parcel_icon} alt="Parcel icon" />
+            <div>
+              <p className="order-item-food">
+                {order.items
+                  .map((item) => `${item.name} x ${item.quantity}`)
+                  .join(", ")}
+              </p>
+              <p className="order-item-name">
+                {order.address.firstName} {order.address.lastName}
+              </p>
+              <div className="order-item-address">
+                <p>{order.address.street},</p>
+                <p>
+                  {order.address.city}, {order.address.state},{" "}
+                  {order.address.country}, {order.address.zipCode}
                 </p>
-                <p className='order-item-name'>
-                  {order.address.firstName} {order.address.lastName}
-                </p>
-                <div className='order-item-address'>
-                  <p>{order.address.street},</p>
-                  <p>{order.address.city}, {order.address.state}, {order.address.country}, {order.address.zipCode}</p>
-                </div>
-                <p className='order-item-phone'>{order.address.phone}</p>
               </div>
-
-              <p>Items: {order.items.length}</p>
-              <p>${order.amount}.00</p>
-
-              <select
-                onChange={(e) => statusHandler(e, order._id)}
-                value={order.status}
-              >
-                <option value="Food Processing">Food Processing</option>
-                <option value="Out for delivery">Out for delivery</option>
-                <option value="Delivered">Delivered</option>
-              </select>
-
+              <p className="order-item-phone">{order.address.phone}</p>
             </div>
-          ))
-        )}
+            <p>Items: {order.items.length}</p>
+            <p>${Number(order.amount).toFixed(2)}</p>
+            <select
+              onChange={(event) => updateStatus(event, order._id)}
+              value={STATUS_OPTIONS.includes(order.status)
+                ? order.status
+                : "Food Processing"}
+            >
+              {STATUS_OPTIONS.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Orders
+export default Orders;
