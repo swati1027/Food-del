@@ -4,7 +4,7 @@ import axios from "axios";
 export const StoreContext = createContext(null);
 
 const StoreContextProvider = ({ children }) => {
-  const url = "http://localhost:4000";
+  const url = "https://food-del-backend-p3jv.onrender.com";
   const currency = "$";
 
   const getItem = (key) => {
