@@ -1,16 +1,37 @@
-# React + Vite
+# 🍅 Tomato - Food Delivery App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack food ordering web application built using the MERN Stack (MongoDB, Express.js, React.js, Node.js) with Stripe payment integration. Users can browse food items, add them to their cart, place orders, and make secure online payments. The application also includes an admin panel for managing food items and customer orders.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+* User Authentication (Login & Registration)
+* Browse and Order Food
+* Shopping Cart Functionality
+* Stripe Payment Gateway Integration
+* Order Tracking
+* Admin Dashboard
+* Food & Order Management
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* React.js
+* Node.js
+* Express.js
+* MongoDB
+* Stripe
+* JWT Authentication
 
-## Expanding the ESLint configuration
+## 📌 Installation
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+git clone :https://github.com/swati1027/Food-del.git
+cd tomato-food-delivery
+npm install
+npm run dev
+
+
+## 👨‍💻 Author
+
+**Swati Matre**
+
+Built as a learning project 
