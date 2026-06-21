@@ -8,7 +8,7 @@ const placeOrder = async (req, res) => {
   console.log("REQ BODY:", req.body);
   console.log("USER ID:", req.body.userId);
 
-  const frontend_url = process.env.FRONTEND_URL || "http://localhost:5174";
+  const frontend_url = process.env.FRONTEND_URL || "https://food-del-frontend-nwbf.onrender.com";
 
   try {
     const userId = req.body.userId;
